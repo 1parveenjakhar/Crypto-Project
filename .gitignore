@@ -23,5 +23,5 @@
 hs_err_pid*
 
 # storage directory
-/Resources/Storage/*
+/src/Resources/Storage/*
 /out/*
