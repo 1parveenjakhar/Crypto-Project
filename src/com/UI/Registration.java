@@ -1,7 +1,12 @@
 package com.UI;
 
+import com.wallet.User;
+
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 
 import static com.utility.CommonConstants.*;
 
@@ -48,20 +53,17 @@ public class Registration extends BackgroundPanel {
         SwingUtilities.invokeLater(() -> detailFields[0].requestFocus());
 
 
-        /*JLabel userIDLabel = new JLabel("Your User ID :");
-        userIDLabel.setFont(new Font(getName(), Font.BOLD, 25));
-        userIDLabel.setForeground(Color.WHITE);
-        userIDLabel.setBounds(frameWidth - 400, frameHeight - 320, 300, 40);
+        JLabel minerLabel = new JLabel("Want to opt in as a Miner ?");
+        minerLabel.setFont(new Font(getName(), Font.BOLD, 25));
+        minerLabel.setForeground(Color.WHITE);
+        minerLabel.setBounds(frameWidth - 420, frameHeight - 320, 350, 40);
+        JCheckBox checkBox = new JCheckBox();
+        checkBox.setBounds(frameWidth - 450, frameHeight - 320, 50, 40);
+        checkBox.setOpaque(false);
+        add(minerLabel);
+        add(checkBox);
 
-        JLabel userID = new JLabel();
-        userID.setFont(new Font(getName(), Font.BOLD, 25));
-        userID.setForeground(Color.WHITE);
-        JScrollPane scrollPane = new JScrollPane(userID, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setBounds(frameWidth - 400, frameHeight - 370, 300, 40);
-        scrollPane.getViewport().setOpaque(false);
-        scrollPane.setOpaque(false);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 8));*/
+        
 
         RoundButton  registerButton = new RoundButton("Register", frameWidth - 250, frameHeight - 150, 120, 50, 25, Color.GREEN, blueColor, false);
         add(registerButton);
@@ -71,10 +73,19 @@ public class Registration extends BackgroundPanel {
                 // Checking validity of info entered for registration
                 checkFieldValidity(detailFields);
 
-                // if valid, then create user
+                // If valid, then create user
+                String ID = String.valueOf(1234 + medicalChain.users.size());
+                User newUser = new User(detailFields[0].getText(), detailFields[1].getToolTipText(), detailFields[2].getText(),
+                        detailFields[3].getText(), checkBox.isSelected(), ID);
+                medicalChain.users.add(newUser);
+                FileOutputStream fileOut = new FileOutputStream(new File("./src/Resources/Storage/BlockChain"));
+                ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+                objectOut.writeObject(medicalChain);
+                objectOut.close();
 
-
-
+                mainFrame.remove(framePanel);
+                mainFrame.add(new UserPanel(newUser));
+                mainFrame.repaint();
             } catch (NumberFormatException nfe) {
                 showErrorPopUp("Please enter valid age in range (0, 120) !");
                 componentToFocus.requestFocus();

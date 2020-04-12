@@ -5,10 +5,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
 
 import static com.utility.CommonConstants.*;
+import com.MedicalChain;
+import com.wallet.User;
 
 
 public class MainFrame extends JFrame {
@@ -37,6 +39,24 @@ public class MainFrame extends JFrame {
         add(minimize);
         add(close);
         add(new MainPanel(), BorderLayout.CENTER);
+
+        // Add a new BlockChain, if not present
+        try {
+            File f = new File("./src/Resources/Storage/BlockChain");
+            if (!f.exists()) {
+                medicalChain = MedicalChain.getInstance();
+                ObjectOutputStream objOut = new ObjectOutputStream(new FileOutputStream(f));
+                objOut.writeObject(medicalChain);
+                objOut.close();
+            } else {
+                FileInputStream fIn = new FileInputStream(f);
+                ObjectInputStream objIn = new ObjectInputStream(fIn);
+                medicalChain = (MedicalChain) objIn.readObject();
+                objIn.close();
+            }
+        } catch (Exception e) {
+            System.out.println("Exception occur on your System: " + e.getMessage());
+        }
     }
 }
 
@@ -77,16 +97,35 @@ class MainPanel extends BackgroundPanel{
             String ID = IDField.getText();
             if (ID.equals("")) showErrorPopUp("Please Enter Valid ID !");
             else {
-                // Write function to check validity of ID
+                try {
+                    // Function to check validity of ID
+                    User user = checkExistenceOfUser(ID);
 
-                // If not valid
-                // showErrorPopUp("Your msg to pop", IDField);
-
-                // If valid
-                mainFrame.remove(framePanel);
-                mainFrame.add(new UserPanel());
-                mainFrame.repaint();
+                    // If valid
+                    mainFrame.remove(framePanel);
+                    mainFrame.add(new UserPanel(user));
+                    mainFrame.repaint();
+                } catch (Exception ex) {
+                    showErrorPopUp(ex.getMessage());
+                }
             }
         });
+    }
+
+    private User checkExistenceOfUser(String ID) throws Exception {
+        try {
+            ArrayList<User> list = medicalChain.users;
+
+            // If user present then no exception
+            if (list != null)
+                for (User user : list)
+                    if (user.getUserID().equals(ID))
+                        return user;
+
+            // else throw exception
+            throw new Exception("User does not exist!");
+        } catch (IOException | NullPointerException e ) {
+            throw new Exception("Unable to retrieve user info !");
+        }
     }
 }
