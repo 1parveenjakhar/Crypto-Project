@@ -1,5 +1,6 @@
 package com.utility;
 
+import com.MedicalChain;
 import com.UI.MainFrame;
 
 import javax.swing.*;
@@ -11,6 +12,7 @@ public class CommonConstants {
     public static Color blueColor = Color.decode("#013070");
     public static MainFrame mainFrame;
     public static JPanel framePanel;
+    public static MedicalChain medicalChain;
 
     public static void showErrorPopUp(String msg) {
         JOptionPane.showMessageDialog(null, msg);

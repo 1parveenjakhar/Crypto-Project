@@ -1,6 +1,8 @@
 package com.utility;
 
 import com.Transact.Transaction;
+
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -11,11 +13,11 @@ public class Util {
         //applies hashing on the given input
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte hash[] = digest.digest(s.getBytes("UTF-8"));
-            StringBuffer hex = new StringBuffer();
-            for(int i = 0; i < hash.length; i++) {
-                String t = Integer.toHexString(0xff & hash[i]);
-                if(t.length() == 1)
+            byte[] hash = digest.digest(s.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (byte b : hash) {
+                String t = Integer.toHexString(0xff & b);
+                if (t.length() == 1)
                     hex.append('0');
                 hex.append(t);
             }

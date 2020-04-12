@@ -1,3 +1,1 @@
-1. Write function to check validity of entered ID (MainFrame: 78)
-2. Create new User (Registration: 73)
-3.
+1.
