@@ -1,6 +1,6 @@
-import java.security.PublicKey;
 import java.util.*;
 import com.Transact.Transaction;
+import com.UI.MainFrame;
 import com.utility.*;
 import com.wallet.*;
 
@@ -153,6 +153,9 @@ public class Driver {
     }
 
     public static void main(String[] args) {
+        // Create and display GUI from event dispatching thread (enhances thread safety)
+        javax.swing.SwingUtilities.invokeLater(MainFrame::new);
+
         // driver class which temporarily works on switch cases
         Medichain med = Medichain.getInstance();
         Block block = new Block("0", 1);
