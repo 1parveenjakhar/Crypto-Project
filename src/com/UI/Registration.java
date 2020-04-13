@@ -47,7 +47,7 @@ public class Registration extends BackgroundPanel {
 
         RoundTextField[] detailFields = new RoundTextField[4];
         for (int i = 0; i < 4; i++) {
-            detailFields[i] = new RoundTextField(100, (space + 80) * i + 140 + space, 300, 40, 25, Color.CYAN, Color.WHITE, false);
+            detailFields[i] = new RoundTextField(100, (space + 80) * i + 140 + space, 300, 40, 25, Color.CYAN);
             add(detailFields[i]);
         }
         SwingUtilities.invokeLater(() -> detailFields[0].requestFocus());
@@ -65,7 +65,7 @@ public class Registration extends BackgroundPanel {
 
         
 
-        RoundButton  registerButton = new RoundButton("Register", frameWidth - 250, frameHeight - 150, 120, 50, 25, Color.GREEN, blueColor, false);
+        RoundButton  registerButton = new RoundButton("Register", frameWidth - 250, frameHeight - 150, 120, 50, 25, Color.CYAN, blueColor, false);
         add(registerButton);
         mainFrame.getRootPane().setDefaultButton(registerButton);
         registerButton.addActionListener(e -> {
@@ -75,10 +75,10 @@ public class Registration extends BackgroundPanel {
 
                 // If valid, then create user
                 String ID = String.valueOf(1234 + medicalChain.users.size());
-                User newUser = new User(detailFields[0].getText(), detailFields[1].getToolTipText(), detailFields[2].getText(),
+                User newUser = new User(detailFields[0].getText(), detailFields[1].getText(), detailFields[2].getText(),
                         detailFields[3].getText(), checkBox.isSelected(), ID);
                 medicalChain.users.add(newUser);
-                FileOutputStream fileOut = new FileOutputStream(new File("./src/Resources/Storage/BlockChain"));
+                FileOutputStream fileOut = new FileOutputStream(new File("./src/Resources/BlockChain"));
                 ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
                 objectOut.writeObject(medicalChain);
                 objectOut.close();

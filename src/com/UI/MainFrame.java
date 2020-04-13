@@ -42,7 +42,7 @@ public class MainFrame extends JFrame {
 
         // Add a new BlockChain, if not present
         try {
-            File f = new File("./src/Resources/Storage/BlockChain");
+            File f = new File("./src/Resources/BlockChain");
             if (!f.exists()) {
                 medicalChain = MedicalChain.getInstance();
                 ObjectOutputStream objOut = new ObjectOutputStream(new FileOutputStream(f));
@@ -68,11 +68,11 @@ class MainPanel extends BackgroundPanel{
         IDLabel.setForeground(Color.WHITE);
         IDLabel.setBounds(100, 400, 400, 50);
         add(IDLabel);
-        RoundTextField IDField = new RoundTextField(100, 450, 400, 40, 25, Color.WHITE, Color.WHITE, false);
+        RoundTextField IDField = new RoundTextField(100, 450, 400, 40, 25, Color.WHITE);
         add(IDField);
-        RoundButton loginButton = new RoundButton("Login", 250, 500, 100, 40, 25, Color.WHITE, blueColor, true);
+        RoundButton loginButton = new RoundButton("Login", 250, 500, 100, 40, 25, Color.CYAN, blueColor, false);
         add(loginButton);
-        RoundButton newUserButton = new RoundButton("New User ?", frameWidth - 320,450, 220, 50, 25, Color.white, Color.green, false);
+        RoundButton newUserButton = new RoundButton("New User ?", frameWidth - 320,450, 220, 50, 25, Color.BLACK, Color.green, false);
         add(newUserButton);
         SwingUtilities.invokeLater(IDField::requestFocus);
         mainFrame.getRootPane().setDefaultButton(loginButton);

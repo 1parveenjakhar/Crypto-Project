@@ -29,12 +29,25 @@ public class RoundButton extends JButton {
             Color color = tempButton.getForeground();
             public void mouseEntered(MouseEvent me) {
                 color = tempButton.getForeground();
-                tempButton.setForeground(Color.LIGHT_GRAY); // change the color to green when mouse over a button
+                tempButton.setForeground(Color.WHITE); // change the color to green when mouse over a button
             }
             public void mouseExited(MouseEvent me) {
                 tempButton.setForeground(color);
             }
         });
+    }
+    public RoundButton(String label, int r, Color fColor, Color bColor) {
+        super(label);
+
+        radius = r;
+        backColor = bColor;
+        borderPaint = false;
+        setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        setForeground(fColor);
+        setContentAreaFilled(false);
+        setFocusPainted(false);
+        setHorizontalAlignment(SwingConstants.CENTER);
+        setMargin(new Insets(10, 10, 10, 10));
     }
 
     @Override

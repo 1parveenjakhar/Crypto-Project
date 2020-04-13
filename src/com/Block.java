@@ -5,8 +5,7 @@ import com.utility.Util;
 import com.wallet.User;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 
 public class Block implements Serializable {
     // creates a block
@@ -17,18 +16,16 @@ public class Block implements Serializable {
     public ArrayList<Transaction> failedTransactions = new ArrayList<>();
     private int nonce;
     public int blockNumber;
-    private final long timestamp;
 
     public Block(String previousBlockHash, int blockNumber) {
         this.previousBlockHash = previousBlockHash;
-        this.timestamp = new Date().getTime();
         this.blockNumber = blockNumber;
         this.hash = findHash();
     }
 
     public String findHash() {
         // calls the method that performs hashing
-        return Util.hashAlgo(previousBlockHash + merkleRoot + timestamp + nonce);
+        return Util.hashAlgo(previousBlockHash + merkleRoot + nonce);
     }
 
     public void mineBlock(int difficulty) {
@@ -48,6 +45,16 @@ public class Block implements Serializable {
             return false;
         }
         t.takeSignature(sender.getPrivateKey(), receiver.getPrivateKey());
+        System.out.println("Validating Transaction...\nplease wait...");
+        int count = 5;
+        while(count != 0) {
+            if (t.zeroKnowledgeProofFailure(sender) || t.zeroKnowledgeProofFailure(receiver)) {
+                System.out.println("Transaction failed!");
+                failedTransactions.add(t);
+                return false;
+            }
+            count--;
+        }
         if(!previousBlockHash.equals("0")) {
             if(!t.processTransaction()) {
                 System.out.println("Transaction failed!");
@@ -60,27 +67,35 @@ public class Block implements Serializable {
         return true;
     }
 
-    public void showUser(User u) {
+    public HashMap<Transaction, Boolean> getPatientTransactions(User u) {
         // shows all the failed as well as successful transaction of a given user
-        ArrayList<Transaction> s = new ArrayList<>();
+        HashMap<Transaction, Boolean> map = new HashMap<>();
         for(Transaction t : transactions) {
-            if(t.senderAddress.equals(u.getPublicKey()) || t.receiverAddress.equals(u.getPublicKey())) {
-                s.add(t);
+            if(t.getReceiverAddress().equals(u.getPublicKey())) {
+                map.put(t, true);
             }
         }
-        ArrayList<Transaction> f = new ArrayList<>();
         for(Transaction t : failedTransactions) {
-            if(t.senderAddress.equals(u.getPublicKey()) || t.receiverAddress.equals(u.getPublicKey())) {
-                f.add(t);
+            if(t.getReceiverAddress().equals(u.getPublicKey())) {
+                map.put(t, false);
             }
         }
-        if(s.size() > 0) {
-            System.out.println("Successful transactions in block: " + blockNumber);
-            System.out.println(s);
+        return map;
+    }
+
+    public HashMap<Transaction, Boolean> getDoctorTransactions(User u) {
+        // shows all the failed as well as successful transaction of a given user
+        HashMap<Transaction, Boolean> map = new HashMap<>();
+        for(Transaction t : transactions) {
+            if(t.getSenderAddress().equals(u.getPublicKey())) {
+                map.put(t, true);
+            }
         }
-        if(f.size() > 0) {
-            System.out.println("Failed transactions in block: " + blockNumber);
-            System.out.println(f);
+        for(Transaction t : failedTransactions) {
+            if(t.getSenderAddress().equals(u.getPublicKey())) {
+                map.put(t, false);
+            }
         }
+        return map;
     }
 }

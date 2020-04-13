@@ -50,7 +50,7 @@ public class MedicalChain implements Serializable {
             }
             for(int j = 0; j < currentBlock.transactions.size(); j++) {
                 Transaction current = currentBlock.transactions.get(j);
-                if(current.verifySignature(current.senderAddress, current.receiverAddress)) {
+                if(current.verifySignature(current.getSenderAddress(), current.getReceiverAddress())) {
                     System.out.println("Signature on Transaction: " + j + " is invalid");
                     return false;
                 }

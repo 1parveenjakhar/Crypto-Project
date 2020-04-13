@@ -23,5 +23,5 @@
 hs_err_pid*
 
 # storage directory
-/src/Resources/Storage/*
+/src/Resources/BlockChain
 /out/*

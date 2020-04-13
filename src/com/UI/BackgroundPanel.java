@@ -3,6 +3,9 @@ package com.UI;
 import javax.swing.*;
 import java.awt.*;
 
+import static com.utility.CommonConstants.frameHeight;
+import static com.utility.CommonConstants.frameWidth;
+
 public class BackgroundPanel extends JPanel {
     /**
      * BackgroundPanel to occupy whole screen
@@ -10,7 +13,7 @@ public class BackgroundPanel extends JPanel {
     protected BackgroundPanel() {
         // Remove all restrictions on layout
         this.setLayout(null);
-        this.setBounds(0, 0, 1200, 600); // Fill whole page
+        this.setBounds(0, 0, frameWidth, frameHeight); // Fill whole page
     }
 
     // Create and render a gradient
