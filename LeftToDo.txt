@@ -1,1 +1,3 @@
-1.
+1. Add some visual to wait until block is mined automatically
+2. When to use 'isChainValid()' method? : MedicalChain.java -> 32
+3. Should choice be given to doctor / patient to mine a block by just pressing a button, or should it be mined automatically?

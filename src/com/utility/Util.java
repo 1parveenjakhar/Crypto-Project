@@ -57,7 +57,7 @@ public class Util {
         catch(Exception e) {
             e.printStackTrace();
         }
-        return result;
+        return !result;
     }
 
     public static String getKeyValue(Key key) {
@@ -70,7 +70,7 @@ public class Util {
         int size = transacts.size();
         ArrayList<String> previousLayer = new ArrayList<>();
         for(Transaction t : transacts) {
-            previousLayer.add(t.prescriptionID);
+            previousLayer.add(t.getPrescriptionID());
         }
         ArrayList<String> layer = previousLayer;
         while(size > 1) {
@@ -89,5 +89,15 @@ public class Util {
             merkleRoot = "";
         }
         return merkleRoot;
+    }
+
+    public static int power(int a, int b, int mod) {
+        int result = 1;
+        while(b != 0) {
+            result = result*a;
+            result = result%mod;
+            b--;
+        }
+        return result;
     }
 }
