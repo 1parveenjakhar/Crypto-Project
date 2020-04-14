@@ -42,7 +42,7 @@ public class MainFrame extends JFrame {
 
         // Add a new BlockChain, if not present
         try {
-            File f = new File("./src/Resources/BlockChain");
+            File f = new File(chainPath);
             if (!f.exists()) {
                 medicalChain = MedicalChain.getInstance();
                 ObjectOutputStream objOut = new ObjectOutputStream(new FileOutputStream(f));
@@ -78,7 +78,7 @@ class MainPanel extends BackgroundPanel{
         mainFrame.getRootPane().setDefaultButton(loginButton);
 
         try {
-            BufferedImage image = ImageIO.read(new File("src/resources/Logo.png"));
+            BufferedImage image = ImageIO.read(this.getClass().getResource(logoPath));
             Image logo = image.getScaledInstance(frameWidth - 200, 300, Image.SCALE_SMOOTH);
             final JLabel imageLabel = new JLabel(new ImageIcon(logo));
             imageLabel.setBounds(100, 50, frameWidth - 200, 300);
