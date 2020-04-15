@@ -4,8 +4,15 @@ import com.Transact.Transaction;
 import com.utility.Util;
 import com.wallet.User;
 
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
+
+import static com.utility.CommonConstants.*;
 
 public class Block implements Serializable {
     // creates a block
@@ -13,22 +20,34 @@ public class Block implements Serializable {
     public String previousBlockHash;
     public String merkleRoot;
     public ArrayList<Transaction> transactions = new ArrayList<>();
-    public ArrayList<Transaction> failedTransactions = new ArrayList<>();
-    private int nonce;
+    public int capacity;
+    public int nonce;
     public int blockNumber;
+    public long lastMinedTimeStamp;
 
     public Block(String previousBlockHash, int blockNumber) {
         this.previousBlockHash = previousBlockHash;
         this.blockNumber = blockNumber;
         this.hash = findHash();
+        capacity = 2;
+        lastMinedTimeStamp = -1;
     }
 
     public String findHash() {
         // calls the method that performs hashing
-        return Util.hashAlgo(previousBlockHash + merkleRoot + nonce);
+        return Util.hashAlgo(previousBlockHash + merkleRoot + lastMinedTimeStamp + nonce);
     }
 
-    public void mineBlock(int difficulty) {
+    public void mineBlock(JLabel label) throws InterruptedException {
+        String a = "- Transaction Verified Successfully !";
+        String d = "- Transaction stored in block " + blockNumber;
+        String b = "- Mining Block " + blockNumber + " ...";
+        String c = "- Block " + blockNumber + " has been mined Successfully !";
+
+        label.setForeground(Color.GREEN);
+        label.setText("<html>" + a + "<br>" + d + "<br>" + b + "</html>");
+        Thread.sleep(1000);
+
         // mines the block by comparing the number of prefix zeroes in the hash of the block(with the help of a nonce)
         merkleRoot = Util.computeMerkleRoot(transactions);
         String required = new String(new char[difficulty]).replace('\0', '0');
@@ -36,66 +55,63 @@ public class Block implements Serializable {
             nonce++;
             hash = findHash();
         }
-        System.out.println("com.Block " + blockNumber +  " has been mined successfully!! " + hash);
+        lastMinedTimeStamp = new Date().getTime();
+
+        label.setText("<html>" + a + "<br>" + d + "<br>" + b + "<br>" + c + "</html>");
+        try {
+            FileOutputStream fOut = new FileOutputStream(new File(chainPath));
+            ObjectOutputStream objOut = new ObjectOutputStream(fOut);
+            objOut.writeObject(medicalChain);
+            objOut.close();
+        } catch (Exception ex) {ex.printStackTrace();}
+        capacity--;
     }
 
-    public boolean addTransaction(Transaction t, User sender, User receiver) {
+    public void addTransaction(Transaction t, JLabel label) throws InterruptedException {
         // calls other methods that help in validating and then adding the transaction to a block
-        if(t == null) {
-            return false;
-        }
-        t.takeSignature(sender.getPrivateKey(), receiver.getPrivateKey());
-        System.out.println("Validating Transaction...\nplease wait...");
+        boolean failed = false;
+        t.takeSignature(t.sender.getPrivateKey(), t.receiver.getPrivateKey());
         int count = 5;
         while(count != 0) {
-            if (t.zeroKnowledgeProofFailure(sender) || t.zeroKnowledgeProofFailure(receiver)) {
-                System.out.println("Transaction failed!");
-                failedTransactions.add(t);
-                return false;
+            if (t.zeroKnowledgeProofFailure(t.sender) || t.zeroKnowledgeProofFailure(t.receiver)) {
+                label.setText("<html>- Transaction is NOT Valid !<br>- Removed from Queue<br>- NOT stored in BlockChain</html>");
+                label.setForeground(Color.RED);
+                Thread.sleep(1000);
+                failed = true;
+                break;
             }
             count--;
         }
-        if(!previousBlockHash.equals("0")) {
+        if(!failed && !previousBlockHash.equals("0")) {
             if(!t.processTransaction()) {
-                System.out.println("Transaction failed!");
-                failedTransactions.add(t);
-                return false;
+                label.setText("<html>- Transaction is NOT Valid !<br>- Removed from Queue<br>- NOT stored in BlockChain</html>");
+                label.setForeground(Color.RED);
+                Thread.sleep(1000);
+                failed = true;
             }
         }
-        transactions.add(t);
-        System.out.println("Transaction Successfully added to the block");
-        return true;
+        if (!failed) {transactions.add(t); mineBlock(label);}
     }
 
-    public HashMap<Transaction, Boolean> getPatientTransactions(User u) {
-        // shows all the failed as well as successful transaction of a given user
-        HashMap<Transaction, Boolean> map = new HashMap<>();
+    public ArrayList<Transaction> getPatientTransactions(User u) {
+        // shows only the successful transaction of a given patient
+        ArrayList<Transaction> list = new ArrayList<>();
         for(Transaction t : transactions) {
-            if(t.getReceiverAddress().equals(u.getPublicKey())) {
-                map.put(t, true);
+            if(t.receiver.getPublicKey().equals(u.getPublicKey())) {
+                list.add(t);
             }
         }
-        for(Transaction t : failedTransactions) {
-            if(t.getReceiverAddress().equals(u.getPublicKey())) {
-                map.put(t, false);
-            }
-        }
-        return map;
+        return list;
     }
 
-    public HashMap<Transaction, Boolean> getDoctorTransactions(User u) {
-        // shows all the failed as well as successful transaction of a given user
-        HashMap<Transaction, Boolean> map = new HashMap<>();
+    public ArrayList<Transaction> getDoctorTransactions(User u) {
+        // shows only the successful transactions made by a given doctor
+        ArrayList<Transaction> list = new ArrayList<>();
         for(Transaction t : transactions) {
-            if(t.getSenderAddress().equals(u.getPublicKey())) {
-                map.put(t, true);
+            if(t.sender.getPublicKey().equals(u.getPublicKey())) {
+                list.add(t);
             }
         }
-        for(Transaction t : failedTransactions) {
-            if(t.getSenderAddress().equals(u.getPublicKey())) {
-                map.put(t, false);
-            }
-        }
-        return map;
+        return list;
     }
 }

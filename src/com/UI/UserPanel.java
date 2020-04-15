@@ -7,12 +7,8 @@ import com.wallet.User;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
 
 import static com.utility.CommonConstants.*;
 
@@ -21,10 +17,12 @@ public class UserPanel extends BackgroundPanel {
     private final HistoryPanel historyPanel;
     private JPanel transactionPanel = null;
     private JPanel currentPanel;
+    private MinePanel minePanel;
+    private final boolean isDoctor;
 
     public UserPanel(User user) {
         framePanel = this;
-        boolean isDoctor = user.getUserDetails()[3].equals("Doctor");
+        isDoctor = user.getUserDetails()[3].equals("Doctor");
         infoPanel = new InfoPanel(user);
         historyPanel = new HistoryPanel(user);
         if (isDoctor) transactionPanel = new TransactionPanel(user);
@@ -35,6 +33,7 @@ public class UserPanel extends BackgroundPanel {
         if (isDoctor) {add(transactionPanel); transactionPanel.setVisible(false);}
 
         int count = 3;
+        if (user.isMiner()) count++;
         if (isDoctor) count++;
         RoundButton[] actionButtons = new RoundButton[count];
         int height = (frameHeight - 5 * (count + 1)) / count;
@@ -42,9 +41,11 @@ public class UserPanel extends BackgroundPanel {
             actionButtons[i] = new RoundButton("", 5, (height + 5) * i + 5, 200, height, 25, Color.CYAN, blueColor, false);
             add(actionButtons[i]);
         }
+        if (user.isMiner()) {minePanel = new MinePanel(actionButtons); add(minePanel); minePanel.setVisible(false);}
         actionButtons[0].setText("User Info");
         actionButtons[1].setText("History");
         if (isDoctor) actionButtons[2].setText("Refer Medicines");
+        if (user.isMiner()) actionButtons[count - 2].setText("<html>Mine A<br>Block</html>");
         actionButtons[count - 1].setText("Logout");
 
         for (int i = 0; i < count - 1; i++) {
@@ -63,11 +64,11 @@ public class UserPanel extends BackgroundPanel {
         currentPanel.setVisible(false);
         if (i == 0) {infoPanel.setVisible(true); currentPanel = infoPanel;}
         else if (i == 1) {historyPanel.reset(user); historyPanel.setVisible(true); currentPanel = historyPanel;}
-        else {transactionPanel.setVisible(true); currentPanel = transactionPanel;}
+        else if (isDoctor && i == 2) {transactionPanel.setVisible(true); currentPanel = transactionPanel;}
+        else {minePanel.reset(); minePanel.setVisible(true); currentPanel = minePanel;}
         mainFrame.repaint();
     }
 }
-
 
 class InfoPanel extends JPanel {
     public InfoPanel(User user) {
@@ -120,6 +121,7 @@ class HistoryPanel extends JPanel {
         historyLabel.setBounds(100, 75, frameWidth - 405, 50);
         add(historyLabel);
 
+
         reset(user);
     }
 
@@ -129,11 +131,11 @@ class HistoryPanel extends JPanel {
                 remove(c);
         ScrollHistory scrollHistoryPanel = new ScrollHistory(user);
         JScrollPane scrollPane = new JScrollPane(scrollHistoryPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setBounds(95, 125, frameWidth - 395, frameHeight - 175);
+        scrollPane.setBounds(100, 125, frameWidth - 405, frameHeight - 175);
         scrollPane.getViewport().setOpaque(false);
         scrollPane.setOpaque(false);
         scrollPane.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2, true));
-        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(12, 0));
 
         add(scrollPane);
     }
@@ -145,39 +147,68 @@ class ScrollHistory extends JPanel {
         setBorder(new EmptyBorder(10, 10, 0, 10));
         setOpaque(false);
         boolean isDoctor = user.getUserDetails()[3].equals("Doctor");
+        int count = 0;
+
+        for (Transaction t : medicalChain.pendingToVerify) {
+            StringBuilder stringBuilder = new StringBuilder("<html>");
+            User u = null;
+            if (isDoctor && t.sender.getUserID().equals(user.getUserID())) u = t.receiver;
+            else if (!isDoctor && t.receiver.getUserID().equals(user.getUserID())) u = t.sender;
+            if (u == null)
+                continue;
+            stringBuilder.append((isDoctor) ? "Patient - " : "Doctor - ").append(u.getUserDetails()[0]).append(" (ID : ").append(u.getUserID()).append(")<br><br>");
+            stringBuilder.append("Description :<br>");
+            stringBuilder.append(t.getDescription()).append("<br>");
+            if (t.getMedicines().size() > 0) {
+                stringBuilder.append("Medicines Referred :<br>");
+                int i = 1;
+                for (String s : t.getMedicines())
+                    stringBuilder.append(i++).append(". ").append(s).append("<br>");
+            }
+            stringBuilder.append("<br>Transaction Status - Pending").append("<br></html>");
+
+            RoundButton button = new RoundButton(stringBuilder.toString(), 40, Color.WHITE, Color.WHITE, 0.2f);
+            button.setHorizontalAlignment(SwingConstants.LEFT);
+            this.add(button);
+            this.add(Box.createRigidArea(new Dimension(0, 10)));
+            count++;
+        }
 
         for (Block block : medicalChain.blockchain) {
-            Map<Transaction, Boolean> map = isDoctor ? block.getDoctorTransactions(user) : block.getPatientTransactions(user);
-            for (Map.Entry<Transaction, Boolean> entry : map.entrySet()) {
+            ArrayList<Transaction> list = isDoctor ? block.getDoctorTransactions(user) : block.getPatientTransactions(user);
+            for (Transaction t : list) {
                 StringBuilder stringBuilder = new StringBuilder("<html>");
-                User u = getUser(entry.getKey(), isDoctor);
+                User u = null;
+                if (isDoctor && t.sender.getUserID().equals(user.getUserID())) u = t.receiver;
+                else if (!isDoctor && t.receiver.getUserID().equals(user.getUserID())) u = t.sender;
                 if (u == null)
                     continue;
                 stringBuilder.append((isDoctor) ? "Patient - " : "Doctor - ").append(u.getUserDetails()[0]).append(" (ID : ").append(u.getUserID()).append(")<br><br>");
                 stringBuilder.append("Description :<br>");
-                stringBuilder.append(entry.getKey().getDescription()).append("<br>");
-                stringBuilder.append("Medicines Referred :<br>");
-                int i = 1;
-                for (String s : entry.getKey().getMedicines())
-                    stringBuilder.append(i++).append(". ").append(s).append("<br>");
-                stringBuilder.append("<br>Transaction Status - ").append((entry.getValue() ? "Success" : "NOT Successful !")).append("<br></html>");
+                stringBuilder.append(t.getDescription()).append("<br>");
+                if (t.getMedicines().size() > 0) {
+                    stringBuilder.append("Medicines Referred :<br>");
+                    int i = 1;
+                    for (String s : t.getMedicines())
+                        stringBuilder.append(i++).append(". ").append(s).append("<br>");
+                }
+                stringBuilder.append("</html>");
 
-                RoundButton button = new RoundButton(stringBuilder.toString(), 40, Color.WHITE, Color.BLACK);
+                RoundButton button = new RoundButton(stringBuilder.toString(), 40, Color.WHITE, Color.WHITE, 0.2f);
                 button.setHorizontalAlignment(SwingConstants.LEFT);
                 this.add(button);
                 this.add(Box.createRigidArea(new Dimension(0, 10)));
+                count++;
             }
         }
-    }
 
-    private User getUser(Transaction t, boolean isDoctor) {
-        for (User user : medicalChain.users) {
-            if (isDoctor && user.getPublicKey().equals(t.getReceiverAddress()))
-                return user;
-            if (!isDoctor && user.getPublicKey().equals(t.getSenderAddress()))
-                return user;
+        if (count == 0) {
+            RoundButton button = new RoundButton("NO History for the User !", 40, Color.WHITE, Color.WHITE, 0.2f);
+            this.add(button);
+            button.add(Box.createHorizontalGlue());
+            button.setMargin(new Insets(20, 0, 20, 0));
+            this.add(Box.createRigidArea(new Dimension(0, 10)));
         }
-        return null;
     }
 }
 
@@ -260,29 +291,33 @@ class TransactionPanel extends JPanel {
                 // Code to add new transaction here
                 try {
                     String[] meds = medArea.getText().split("\\n");
-                    ArrayList<String> list = new ArrayList<>(Arrays.asList(meds));
-                    System.out.println(list);
+                    ArrayList<String> list = new ArrayList<>();
+                    for (String s : meds) if (!s.equals("")) list.add(s);
                     StringBuilder stringBuilder = new StringBuilder();
                     for (String s : descArea.getText().split("\\n"))
                         stringBuilder.append(s).append("<br>");
-                    Transaction newTransaction = new Transaction(user.getPublicKey(), patient.getPublicKey(), stringBuilder.toString(), list);
-                    int blockNumber = medicalChain.blockchain.size();
-                    String prevHash = (blockNumber == 0) ? "0" : medicalChain.blockchain.get(blockNumber - 1).hash;
-                    Block newBlock = new Block(prevHash, blockNumber + 1);
-                    if (!newBlock.addTransaction(newTransaction, user, patient)) throw new Exception();
-                    medicalChain.addBlock(newBlock);
-                    FileOutputStream fileOut = new FileOutputStream(new File("./src/Resources/BlockChain"));
+                    Transaction newTransaction = new Transaction(user, patient, stringBuilder.toString(), list);
+                    medicalChain.pendingToVerify.add(newTransaction);
+
+                    FileOutputStream fileOut = new FileOutputStream(new File("chainPath"));
                     ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
                     objectOut.writeObject(medicalChain);
                     objectOut.close();
 
-                    showErrorPopUp("Transaction Successfully Added!");
+                    showErrorPopUp("Transaction Successfully Added to Queue!");
+                    medArea.setText("");
+                    descArea.setText("");
+                    userIDField.setText("");
                 } catch (Exception ex) {
                     System.out.println(ex.getMessage());
                     showErrorPopUp("Transaction Failed!");
+                    medArea.setText("");
+                    descArea.setText("");
+                    userIDField.setText("");
                 }
             } catch (Exception ex) {
                 showErrorPopUp(ex.getMessage());
+
             }
         });
     }
@@ -307,6 +342,76 @@ class TransactionPanel extends JPanel {
             throw new Exception("Please Enter some description of disease !");
 
         return user;
+    }
+}
+
+class MinePanel extends JPanel {
+    private final RoundButton[] buttons;
+    public MinePanel(RoundButton[] buttons) {
+        setLayout(null);
+        setBounds(205, 0, frameWidth - 205, frameHeight);
+        setOpaque(false);
+        this.buttons = buttons;
+        reset();
+    }
+
+    public void  reset() {
+        this.removeAll();
+        int pending = medicalChain.pendingToVerify.size();
+        JLabel mineLabel = new JLabel();
+        if (pending == 0) mineLabel.setText("No transactions are pending now !");
+        else if (pending  == 1) mineLabel.setText("1 transaction is pending to Verify !");
+        else mineLabel.setText((pending) + " transactions are pending to Verify !");
+        mineLabel.setForeground(Color.WHITE);
+        mineLabel.setFont(new Font(getName(), Font.BOLD, 30));
+        mineLabel.setBounds(100, 100, frameWidth - 405, 50);
+        mineLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        add(mineLabel);
+        int x = (frameWidth - 205 - 300) / 2;
+        RoundButton verifyButton = new RoundButton("Verify A Transaction", x, 200, 300, 50, 25, Color.CYAN, blueColor, false);
+        add(verifyButton);
+
+        JLabel statusLabel = new JLabel();
+        statusLabel.setForeground(Color.WHITE);
+        statusLabel.setFont(new Font(getName(), Font.BOLD, 25));
+        statusLabel.setBounds(100, 300, frameWidth - 405, 300);
+        statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        statusLabel.setVerticalAlignment(SwingConstants.TOP);
+        add(statusLabel);
+
+        verifyButton.addActionListener(e -> {
+            if (medicalChain.pendingToVerify.size() > 0) {
+                statusLabel.setForeground(Color.WHITE);
+                statusLabel.setText("Verifying, Please wait ...");
+                mainFrame.disableButtons();
+                Thread t = new Thread(() -> {
+                    try {
+                        for (RoundButton b : buttons)
+                            b.setEnabled(false);
+                        verifyButton.setEnabled(false);
+                        medicalChain.verifyTransaction(statusLabel);
+                        for (RoundButton b : buttons)
+                            b.setEnabled(true);
+                        verifyButton.setEnabled(true);
+                        mainFrame.enableButtons();
+                    } catch (InterruptedException interruptedException) {
+                        interruptedException.printStackTrace();
+                        mainFrame.enableButtons();
+                    }
+                    if (medicalChain.pendingToVerify.size()  == 0)
+                        mineLabel.setText("No transactions are pending now !");
+                    else
+                    if (medicalChain.pendingToVerify.size()  == 1) mineLabel.setText("1 transaction is pending to Verify !");
+                    else mineLabel.setText((medicalChain.pendingToVerify.size()) + " transactions are pending to Verify !");
+
+                    System.out.println("Now, capacity = " + medicalChain.blockchain.get(medicalChain.blockchain.size() - 1).capacity);
+                });
+                t.start();
+
+            } else {
+                statusLabel.setText("");
+            }
+        });
     }
 }
 

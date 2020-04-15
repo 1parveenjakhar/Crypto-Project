@@ -16,7 +16,7 @@ public class Registration extends BackgroundPanel {
     public Registration() {
         framePanel = this;
 
-        RoundButton backButton = new RoundButton("←", 10, 10, 60, 25, 10, Color.white, blueColor, false);
+        RoundButton backButton = new RoundButton("Back", 10, 10, 60, 25, 10, Color.cyan, blueColor, false);
         backButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
         backButton.addActionListener(e -> {
             mainFrame.remove(framePanel);
@@ -78,7 +78,7 @@ public class Registration extends BackgroundPanel {
                 User newUser = new User(detailFields[0].getText(), detailFields[1].getText(), detailFields[2].getText(),
                         detailFields[3].getText(), checkBox.isSelected(), ID);
                 medicalChain.users.add(newUser);
-                FileOutputStream fileOut = new FileOutputStream(new File("./src/Resources/BlockChain"));
+                FileOutputStream fileOut = new FileOutputStream(new File(chainPath));
                 ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
                 objectOut.writeObject(medicalChain);
                 objectOut.close();

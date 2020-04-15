@@ -10,6 +10,7 @@ public class RoundButton extends JButton {
     private final int radius;
     private final Color backColor;
     private final boolean borderPaint;
+    private float alpha;
 
     public RoundButton(String label, int x, int y, int w, int h, int r, Color fColor, Color bColor, boolean border) {
         super(label);
@@ -36,9 +37,10 @@ public class RoundButton extends JButton {
             }
         });
     }
-    public RoundButton(String label, int r, Color fColor, Color bColor) {
+    public RoundButton(String label, int r, Color fColor, Color bColor, float alpha) {
         super(label);
 
+        this.alpha = alpha;
         radius = r;
         backColor = bColor;
         borderPaint = false;
@@ -57,6 +59,8 @@ public class RoundButton extends JButton {
         int buttonHeight = getHeight() - 1;
         Shape shape = new RoundRectangle2D.Float(0, 0, buttonWidth, buttonHeight, radius, radius);
         g2.setColor(backColor);
+        if (alpha > 0)
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
         g2.fill(shape);
         setBorderPainted(false);
         g2.dispose();

@@ -14,6 +14,8 @@ import com.wallet.User;
 
 
 public class MainFrame extends JFrame {
+    private final RoundButton minimize;
+    private final RoundButton close;
     public MainFrame() {
         setSize(frameWidth, frameHeight);
         setUndecorated(true);
@@ -27,8 +29,8 @@ public class MainFrame extends JFrame {
         setVisible(true);
         mainFrame = this;
 
-        RoundButton minimize = new RoundButton("_", frameWidth - 115, 5, 50, 20, 10, Color.white, blueColor, false);
-        RoundButton close = new RoundButton("X", frameWidth - 55, 5, 50, 20, 10, Color.white, Color.red, false);
+        minimize = new RoundButton("_", frameWidth - 115, 5, 50, 20, 10, Color.cyan, blueColor, false);
+        close = new RoundButton("X", frameWidth - 55, 5, 50, 20, 10, Color.cyan, Color.red, false);
         close.setFont(new Font("ARIAL", Font.BOLD, 13));
         minimize.setFont(new Font("ARIAL", Font.BOLD, 15));
         // Fix cross platform rendering issues. Displays on Windows only.
@@ -42,7 +44,7 @@ public class MainFrame extends JFrame {
 
         // Add a new BlockChain, if not present
         try {
-            File f = new File("./src/Resources/BlockChain");
+            File f = new File(chainPath);
             if (!f.exists()) {
                 medicalChain = MedicalChain.getInstance();
                 ObjectOutputStream objOut = new ObjectOutputStream(new FileOutputStream(f));
@@ -57,6 +59,16 @@ public class MainFrame extends JFrame {
         } catch (Exception e) {
             System.out.println("Exception occur on your System: " + e.getMessage());
         }
+    }
+
+    public void disableButtons() {
+        minimize.setEnabled(false);
+        close.setEnabled(false);
+    }
+
+    public void enableButtons() {
+        minimize.setEnabled(true);
+        close.setEnabled(true);
     }
 }
 
@@ -74,11 +86,13 @@ class MainPanel extends BackgroundPanel{
         add(loginButton);
         RoundButton newUserButton = new RoundButton("New User ?", frameWidth - 320,450, 220, 50, 25, Color.BLACK, Color.green, false);
         add(newUserButton);
+        RoundButton viewBlockchainButton = new RoundButton("View BlockChain", frameWidth - 320,520, 220, 50, 25, Color.BLACK, Color.green, false);
+        add(viewBlockchainButton);
         SwingUtilities.invokeLater(IDField::requestFocus);
         mainFrame.getRootPane().setDefaultButton(loginButton);
 
         try {
-            BufferedImage image = ImageIO.read(new File("src/resources/Logo.png"));
+            BufferedImage image = ImageIO.read(this.getClass().getResource(logoPath));
             Image logo = image.getScaledInstance(frameWidth - 200, 300, Image.SCALE_SMOOTH);
             final JLabel imageLabel = new JLabel(new ImageIcon(logo));
             imageLabel.setBounds(100, 50, frameWidth - 200, 300);
@@ -108,6 +122,16 @@ class MainPanel extends BackgroundPanel{
                 } catch (Exception ex) {
                     showErrorPopUp(ex.getMessage());
                 }
+            }
+        });
+
+        viewBlockchainButton.addActionListener(e -> {
+            if (medicalChain.blockchain.get(0).transactions.size() == 0 && medicalChain.pendingToVerify.size() == 0)
+                showErrorPopUp("NO Transactions has been made yet !");
+            else {
+                mainFrame.remove(framePanel);
+                mainFrame.add(new BlockChain());
+                mainFrame.repaint();
             }
         });
     }
