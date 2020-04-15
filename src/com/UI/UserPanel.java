@@ -384,7 +384,6 @@ class MinePanel extends JPanel {
                 statusLabel.setForeground(Color.WHITE);
                 statusLabel.setText("Verifying, Please wait ...");
                 mainFrame.disableButtons();
-                mainFrame.enableButtons();
                 Thread t = new Thread(() -> {
                     try {
                         for (RoundButton b : buttons)
@@ -394,22 +393,20 @@ class MinePanel extends JPanel {
                         for (RoundButton b : buttons)
                             b.setEnabled(true);
                         verifyButton.setEnabled(true);
+                        mainFrame.enableButtons();
                     } catch (InterruptedException interruptedException) {
                         interruptedException.printStackTrace();
+                        mainFrame.enableButtons();
                     }
+                    if (medicalChain.pendingToVerify.size()  == 0)
+                        mineLabel.setText("No transactions are pending now !");
+                    else
+                    if (medicalChain.pendingToVerify.size()  == 1) mineLabel.setText("1 transaction is pending to Verify !");
+                    else mineLabel.setText((medicalChain.pendingToVerify.size()) + " transactions are pending to Verify !");
+
+                    System.out.println("Now, capacity = " + medicalChain.blockchain.get(medicalChain.blockchain.size() - 1).capacity);
                 });
                 t.start();
-                if (pending - 1 == 0)
-                    mineLabel.setText("No transactions are pending now !");
-                else
-                    if (pending - 1  == 1) mineLabel.setText("1 transaction is pending to Verify !");
-                    else mineLabel.setText((pending - 1) + " transactions are pending to Verify !");
-                try {
-                    FileOutputStream fOut = new FileOutputStream(new File(chainPath));
-                    ObjectOutputStream objOut = new ObjectOutputStream(fOut);
-                    objOut.writeObject(medicalChain);
-                    objOut.close();
-                } catch (Exception ex) {ex.printStackTrace();}
 
             } else {
                 statusLabel.setText("");

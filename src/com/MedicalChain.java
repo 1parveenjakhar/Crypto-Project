@@ -74,10 +74,12 @@ public class MedicalChain implements Serializable {
     public void verifyTransaction(JLabel label) throws InterruptedException {
         // verify a newly added Transaction
         Block lastBlock = blockchain.get(blockchain.size() - 1);
+        System.out.println("Capacity of last block = " + lastBlock.capacity);
         if (lastBlock.capacity > 0)
             lastBlock.addTransaction(pendingToVerify.remove(), label);
         else {
             Block newBlock = new Block(lastBlock.hash, lastBlock.blockNumber + 1);
+            blockchain.add(newBlock);
             newBlock.addTransaction(pendingToVerify.remove(), label);
         }
     }

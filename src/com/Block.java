@@ -6,10 +6,13 @@ import com.wallet.User;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
 
-import static com.utility.CommonConstants.difficulty;
+import static com.utility.CommonConstants.*;
 
 public class Block implements Serializable {
     // creates a block
@@ -26,7 +29,7 @@ public class Block implements Serializable {
         this.previousBlockHash = previousBlockHash;
         this.blockNumber = blockNumber;
         this.hash = findHash();
-        capacity = 5;
+        capacity = 2;
         lastMinedTimeStamp = -1;
     }
 
@@ -55,7 +58,13 @@ public class Block implements Serializable {
         lastMinedTimeStamp = new Date().getTime();
 
         label.setText("<html>" + a + "<br>" + d + "<br>" + b + "<br>" + c + "</html>");
-        Thread.sleep(1000);
+        try {
+            FileOutputStream fOut = new FileOutputStream(new File(chainPath));
+            ObjectOutputStream objOut = new ObjectOutputStream(fOut);
+            objOut.writeObject(medicalChain);
+            objOut.close();
+        } catch (Exception ex) {ex.printStackTrace();}
+        capacity--;
     }
 
     public void addTransaction(Transaction t, JLabel label) throws InterruptedException {

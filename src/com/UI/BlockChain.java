@@ -31,7 +31,7 @@ public class BlockChain extends BackgroundPanel {
         });
         add(backButton);
         
-        infoPanel = new BlockInfoPanel(true);
+        infoPanel = new BlockInfoPanel(0);
         historyPanel = new TransactionHistoryPanel(-1);
         currentPanel = historyPanel;
         add(infoPanel);
@@ -75,8 +75,27 @@ public class BlockChain extends BackgroundPanel {
             currentPanel.setVisible(true);
             mainFrame.repaint();
         });
-        actionButtons[1].addActionListener(e -> infoPanel.showInfo(true));
-        actionButtons[2].addActionListener(e -> infoPanel.showInfo(false));
+        actionButtons[1].addActionListener(e -> {
+            int x = ++infoPanel.last;
+            x = x % medicalChain.blockchain.size();
+            infoPanel.last = x;
+            if (currentPanel == historyPanel) {
+                historyPanel.reset(x);
+            } else {
+                infoPanel.showInfo(x);
+            }
+
+        });
+        actionButtons[2].addActionListener(e -> {
+            int x = --infoPanel.last;
+            x = (x + medicalChain.blockchain.size()) % medicalChain.blockchain.size();
+            infoPanel.last = x;
+            if (currentPanel == historyPanel) {
+                historyPanel.reset(x);
+            } else {
+                infoPanel.showInfo(x);
+            }
+        });
 
         changeButton.addActionListener(e -> {
             if (isHistoryView.get()) {
@@ -92,13 +111,14 @@ public class BlockChain extends BackgroundPanel {
                     changeButton.setText("Transactions");
                     historyPanel.setVisible(false);
                     infoPanel.setVisible(true);
+                    infoPanel.showInfo(infoPanel.last);
                     currentPanel = infoPanel;
-                    isHistoryView.set(false);
                 } else {
                     historyPanel.setVisible(true);
                     infoPanel.setVisible(false);
                     historyPanel.reset(infoPanel.last);
                     changeButton.setText("Block Info");
+                    currentPanel = historyPanel;
                 }
             }
             mainFrame.repaint();
@@ -110,36 +130,37 @@ public class BlockChain extends BackgroundPanel {
 class BlockInfoPanel extends JPanel {
     public int last;
     private final JLabel blockLabel;
-    public BlockInfoPanel(boolean next) {
+    public BlockInfoPanel(int x) {
         setLayout(null);
         setBounds(0, 0, frameWidth, frameHeight - 70);
         setOpaque(false);
-        last = 0;
         blockLabel = new JLabel();
         blockLabel.setForeground(Color.decode("#42f58d"));
         blockLabel.setFont(new Font(getName(), Font.BOLD, 30));
         blockLabel.setBounds(100, 50, frameWidth - 220, 50);
         add(blockLabel);
         
-        showInfo(next);
+        showInfo(x);
     }
 
-    public void showInfo(boolean next) {
-        if (next) last = (++last) % medicalChain.blockchain.size();
-        else last = (--last) % medicalChain.blockchain.size();
-        blockLabel.setText("Block " + last + " Info:");
+    public void showInfo(int x) {
+        for (Component c : this.getComponents())
+            if (c != blockLabel)
+                remove(c);
 
-        ArrayList<Block> blockchain = medicalChain.blockchain;
-        JLabel hash = new JLabel("Block Hash - " + blockchain.get(last).hash);
+        last = x;
+        blockLabel.setText("Block " + (last + 1) + " Info:");
+        Block block = medicalChain.blockchain.get(x);
+        JLabel hash = new JLabel("Block Hash - " + block.hash);
         hash.setForeground(Color.WHITE);
         hash.setFont(new Font(getName(), Font.BOLD, 20));
-        JLabel prevHash = new JLabel("Previous Hash - " + blockchain.get(last).previousBlockHash);
+        JLabel prevHash = new JLabel("Previous Hash - " + block.previousBlockHash);
         prevHash.setForeground(Color.WHITE);
         prevHash.setFont(new Font(getName(), Font.BOLD, 20));
-        JLabel merkleRoot = new JLabel("Merkle Root - " + blockchain.get(last).merkleRoot);
+        JLabel merkleRoot = new JLabel("Merkle Root - " + block.merkleRoot);
         merkleRoot.setForeground(Color.WHITE);
         merkleRoot.setFont(new Font(getName(), Font.BOLD, 20));
-        JLabel nonce = new JLabel("nonce - " + blockchain.get(last).nonce);
+        JLabel nonce = new JLabel("nonce - " + block.nonce);
         nonce.setForeground(Color.WHITE);
         nonce.setFont(new Font(getName(), Font.BOLD, 20));
 
@@ -152,6 +173,8 @@ class BlockInfoPanel extends JPanel {
         add(prevHash);
         add(merkleRoot);
         add(nonce);
+        repaint();
+        mainFrame.repaint();
     }
 }
 

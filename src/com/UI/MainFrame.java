@@ -14,8 +14,8 @@ import com.wallet.User;
 
 
 public class MainFrame extends JFrame {
-    private RoundButton minimize;
-    private RoundButton close;
+    private final RoundButton minimize;
+    private final RoundButton close;
     public MainFrame() {
         setSize(frameWidth, frameHeight);
         setUndecorated(true);
@@ -126,9 +126,13 @@ class MainPanel extends BackgroundPanel{
         });
 
         viewBlockchainButton.addActionListener(e -> {
-            mainFrame.remove(framePanel);
-            mainFrame.add(new BlockChain());
-            mainFrame.repaint();
+            if (medicalChain.blockchain.get(0).transactions.size() == 0 && medicalChain.pendingToVerify.size() == 0)
+                showErrorPopUp("NO Transactions has been made yet !");
+            else {
+                mainFrame.remove(framePanel);
+                mainFrame.add(new BlockChain());
+                mainFrame.repaint();
+            }
         });
     }
 
