@@ -16,7 +16,7 @@ public class Registration extends BackgroundPanel {
     public Registration() {
         framePanel = this;
 
-        RoundButton backButton = new RoundButton("Back", 10, 10, 60, 25, 10, Color.white, blueColor, false);
+        RoundButton backButton = new RoundButton("Back", 10, 10, 60, 25, 10, Color.cyan, blueColor, false);
         backButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
         backButton.addActionListener(e -> {
             mainFrame.remove(framePanel);

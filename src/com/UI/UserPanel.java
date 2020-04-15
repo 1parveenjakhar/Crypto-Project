@@ -131,11 +131,11 @@ class HistoryPanel extends JPanel {
                 remove(c);
         ScrollHistory scrollHistoryPanel = new ScrollHistory(user);
         JScrollPane scrollPane = new JScrollPane(scrollHistoryPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setBounds(95, 125, frameWidth - 395, frameHeight - 175);
+        scrollPane.setBounds(100, 125, frameWidth - 405, frameHeight - 175);
         scrollPane.getViewport().setOpaque(false);
         scrollPane.setOpaque(false);
         scrollPane.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2, true));
-        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(12, 0));
 
         add(scrollPane);
     }
@@ -374,14 +374,17 @@ class MinePanel extends JPanel {
         JLabel statusLabel = new JLabel();
         statusLabel.setForeground(Color.WHITE);
         statusLabel.setFont(new Font(getName(), Font.BOLD, 25));
-        statusLabel.setBounds(100, 300, frameWidth - 405, 200);
+        statusLabel.setBounds(100, 300, frameWidth - 405, 300);
         statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
         statusLabel.setVerticalAlignment(SwingConstants.TOP);
         add(statusLabel);
 
         verifyButton.addActionListener(e -> {
             if (medicalChain.pendingToVerify.size() > 0) {
+                statusLabel.setForeground(Color.WHITE);
                 statusLabel.setText("Verifying, Please wait ...");
+                mainFrame.disableButtons();
+                mainFrame.enableButtons();
                 Thread t = new Thread(() -> {
                     try {
                         for (RoundButton b : buttons)

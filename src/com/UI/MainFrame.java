@@ -14,6 +14,8 @@ import com.wallet.User;
 
 
 public class MainFrame extends JFrame {
+    private RoundButton minimize;
+    private RoundButton close;
     public MainFrame() {
         setSize(frameWidth, frameHeight);
         setUndecorated(true);
@@ -27,8 +29,8 @@ public class MainFrame extends JFrame {
         setVisible(true);
         mainFrame = this;
 
-        RoundButton minimize = new RoundButton("_", frameWidth - 115, 5, 50, 20, 10, Color.white, blueColor, false);
-        RoundButton close = new RoundButton("X", frameWidth - 55, 5, 50, 20, 10, Color.white, Color.red, false);
+        minimize = new RoundButton("_", frameWidth - 115, 5, 50, 20, 10, Color.cyan, blueColor, false);
+        close = new RoundButton("X", frameWidth - 55, 5, 50, 20, 10, Color.cyan, Color.red, false);
         close.setFont(new Font("ARIAL", Font.BOLD, 13));
         minimize.setFont(new Font("ARIAL", Font.BOLD, 15));
         // Fix cross platform rendering issues. Displays on Windows only.
@@ -58,6 +60,16 @@ public class MainFrame extends JFrame {
             System.out.println("Exception occur on your System: " + e.getMessage());
         }
     }
+
+    public void disableButtons() {
+        minimize.setEnabled(false);
+        close.setEnabled(false);
+    }
+
+    public void enableButtons() {
+        minimize.setEnabled(true);
+        close.setEnabled(true);
+    }
 }
 
 class MainPanel extends BackgroundPanel{
@@ -74,6 +86,8 @@ class MainPanel extends BackgroundPanel{
         add(loginButton);
         RoundButton newUserButton = new RoundButton("New User ?", frameWidth - 320,450, 220, 50, 25, Color.BLACK, Color.green, false);
         add(newUserButton);
+        RoundButton viewBlockchainButton = new RoundButton("View BlockChain", frameWidth - 320,520, 220, 50, 25, Color.BLACK, Color.green, false);
+        add(viewBlockchainButton);
         SwingUtilities.invokeLater(IDField::requestFocus);
         mainFrame.getRootPane().setDefaultButton(loginButton);
 
@@ -109,6 +123,12 @@ class MainPanel extends BackgroundPanel{
                     showErrorPopUp(ex.getMessage());
                 }
             }
+        });
+
+        viewBlockchainButton.addActionListener(e -> {
+            mainFrame.remove(framePanel);
+            mainFrame.add(new BlockChain());
+            mainFrame.repaint();
         });
     }
 

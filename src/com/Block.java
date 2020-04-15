@@ -18,7 +18,7 @@ public class Block implements Serializable {
     public String merkleRoot;
     public ArrayList<Transaction> transactions = new ArrayList<>();
     public int capacity;
-    private int nonce;
+    public int nonce;
     public int blockNumber;
     public long lastMinedTimeStamp;
 
