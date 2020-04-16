@@ -20,17 +20,18 @@ public class MedicalChain implements Serializable {
     private static boolean valid = true;
     private static MedicalChain instance;
 
-    private MedicalChain() {
+    private MedicalChain() throws InterruptedException {
         blockchain = new ArrayList<>();
         users = new ArrayList<>();
         instance = this;
         pendingToVerify = new LinkedList<>();
-        blockchain.add(new Block("0", 1));
+        Block genesisBlock = new Block("0", 0);
+        genesisBlock.mineBlock(null);
+        blockchain.add(genesisBlock);
     }
 
     public static MedicalChain getInstance() throws Exception {
-        if (instance == null)
-            return new MedicalChain();
+        if (instance == null) return new MedicalChain();
         if (!valid)
             throw new Exception("<html>Your BlockChain is not valid!<br/>Probably, it has been tampered!</html>");
         return instance;
@@ -71,16 +72,11 @@ public class MedicalChain implements Serializable {
         return true;
     }
 
-    public void verifyTransaction(JLabel label) throws InterruptedException {
+    public void verifyTransaction(JLabel label, JLabel mainLabel) throws InterruptedException {
         // verify a newly added Transaction
         Block lastBlock = blockchain.get(blockchain.size() - 1);
-        System.out.println("Capacity of last block = " + lastBlock.capacity);
-        if (lastBlock.capacity > 0)
-            lastBlock.addTransaction(pendingToVerify.remove(), label);
-        else {
-            Block newBlock = new Block(lastBlock.hash, lastBlock.blockNumber + 1);
-            blockchain.add(newBlock);
-            newBlock.addTransaction(pendingToVerify.remove(), label);
-        }
+        Block newBlock = new Block(lastBlock.hash, lastBlock.blockNumber + 1);
+        blockchain.add(newBlock);
+        newBlock.addTransaction(label, mainLabel);
     }
 }

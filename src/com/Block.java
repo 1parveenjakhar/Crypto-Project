@@ -20,7 +20,6 @@ public class Block implements Serializable {
     public String previousBlockHash;
     public String merkleRoot;
     public ArrayList<Transaction> transactions = new ArrayList<>();
-    public int capacity;
     public int nonce;
     public int blockNumber;
     public long lastMinedTimeStamp;
@@ -29,7 +28,6 @@ public class Block implements Serializable {
         this.previousBlockHash = previousBlockHash;
         this.blockNumber = blockNumber;
         this.hash = findHash();
-        capacity = 2;
         lastMinedTimeStamp = -1;
     }
 
@@ -39,58 +37,75 @@ public class Block implements Serializable {
     }
 
     public void mineBlock(JLabel label) throws InterruptedException {
-        String a = "- Transaction Verified Successfully !";
-        String d = "- Transaction stored in block " + blockNumber;
+        String d = "- All successful Transactions are stored in Block " + blockNumber;
         String b = "- Mining Block " + blockNumber + " ...";
         String c = "- Block " + blockNumber + " has been mined Successfully !";
+        String a = null;
 
-        label.setForeground(Color.GREEN);
-        label.setText("<html>" + a + "<br>" + d + "<br>" + b + "</html>");
-        Thread.sleep(1000);
+        if (label != null) {
+            a = label.getText();
+            label.setForeground(Color.GREEN);
+            label.setText(a + "<html><br>" + d + "<br><br>" + b + "</html>");
+            Thread.sleep(1000);
+        }
 
         // mines the block by comparing the number of prefix zeroes in the hash of the block(with the help of a nonce)
-        merkleRoot = Util.computeMerkleRoot(transactions);
+        if (transactions.size() == 0) merkleRoot = "NULL";
+        else merkleRoot = Util.computeMerkleRoot(transactions);
         String required = new String(new char[difficulty]).replace('\0', '0');
         while(!hash.substring(0, difficulty).equals(required)) {
             nonce++;
             hash = findHash();
         }
         lastMinedTimeStamp = new Date().getTime();
-
-        label.setText("<html>" + a + "<br>" + d + "<br>" + b + "<br>" + c + "</html>");
+        if (label != null) label.setText(a + "<html><br>" + d + "<br><br>" + b + "<br>" + c + "</html>");
         try {
             FileOutputStream fOut = new FileOutputStream(new File(chainPath));
             ObjectOutputStream objOut = new ObjectOutputStream(fOut);
             objOut.writeObject(medicalChain);
             objOut.close();
         } catch (Exception ex) {ex.printStackTrace();}
-        capacity--;
     }
 
-    public void addTransaction(Transaction t, JLabel label) throws InterruptedException {
+    public void addTransaction(JLabel label, JLabel mainLabel) throws InterruptedException {
         // calls other methods that help in validating and then adding the transaction to a block
-        boolean failed = false;
-        t.takeSignature(t.sender.getPrivateKey(), t.receiver.getPrivateKey());
-        int count = 5;
-        while(count != 0) {
-            if (t.zeroKnowledgeProofFailure(t.sender) || t.zeroKnowledgeProofFailure(t.receiver)) {
-                label.setText("<html>- Transaction is NOT Valid !<br>- Removed from Queue<br>- NOT stored in BlockChain</html>");
-                label.setForeground(Color.RED);
-                Thread.sleep(1000);
-                failed = true;
-                break;
+        int x = 0;
+        int pending = medicalChain.pendingToVerify.size();
+        for (int i = 1; i <= pending; i++) {
+            Transaction t = medicalChain.pendingToVerify.remove();
+            boolean failed = false;
+            t.takeSignature(t.sender.getPrivateKey(), t.receiver.getPrivateKey());
+            int count = 5;
+            while (count != 0) {
+                if (t.zeroKnowledgeProofFailure(t.sender) || t.zeroKnowledgeProofFailure(t.receiver)) {
+                    failed = true;
+                    break;
+                }
+                count--;
             }
-            count--;
-        }
-        if(!failed && !previousBlockHash.equals("0")) {
-            if(!t.processTransaction()) {
-                label.setText("<html>- Transaction is NOT Valid !<br>- Removed from Queue<br>- NOT stored in BlockChain</html>");
-                label.setForeground(Color.RED);
-                Thread.sleep(1000);
-                failed = true;
+            if (!failed && !previousBlockHash.equals("0")) {
+                if (!t.processTransaction()) {
+                    failed = true;
+                }
             }
+            if (!failed) {
+                transactions.add(t); x++;
+            }
+            if (pending - i == 0) mainLabel.setText("NO Transactions are pending !");
+            else if (pending - i == 1) mainLabel.setText("1 Transaction is pending to verify !");
+            else mainLabel.setText((pending - i) + " Transactions are pending to verify !");
+            Thread.sleep(1000);
         }
-        if (!failed) {transactions.add(t); mineBlock(label);}
+
+        if (x > 0) {
+            label.setForeground(Color.green);
+            label.setText("<html>Total Valid Transactions = " + x + "<br>Total Invalid Transactions = " + (pending - x) + "<br><html>");
+            mineBlock(label);
+        }
+        else {
+            label.setForeground(Color.RED);
+            label.setText("All transactions are invalid !");
+        }
     }
 
     public ArrayList<Transaction> getPatientTransactions(User u) {

@@ -149,7 +149,8 @@ class BlockInfoPanel extends JPanel {
                 remove(c);
 
         last = x;
-        blockLabel.setText("Block " + (last + 1) + " Info:");
+        if (last == 0) blockLabel.setText("Genesis Block Info:");
+        else blockLabel.setText("Block " + last + " Info:");
         Block block = medicalChain.blockchain.get(x);
         JLabel hash = new JLabel("Block Hash - " + block.hash);
         hash.setForeground(Color.WHITE);
@@ -164,10 +165,10 @@ class BlockInfoPanel extends JPanel {
         nonce.setForeground(Color.WHITE);
         nonce.setFont(new Font(getName(), Font.BOLD, 20));
 
-        hash.setBounds(100, 120, frameWidth - 100, 50);
-        prevHash.setBounds(100, 200, frameWidth - 100, 50);
-        merkleRoot.setBounds(100, 280, frameWidth - 100, 50);
-        nonce.setBounds(100, 360, frameWidth - 100, 50);
+        hash.setBounds(80, 120, frameWidth - 80, 50);
+        prevHash.setBounds(80, 200, frameWidth - 80, 50);
+        merkleRoot.setBounds(80, 280, frameWidth - 80, 50);
+        nonce.setBounds(80, 360, frameWidth - 80, 50);
 
         add(hash);
         add(prevHash);
@@ -214,7 +215,8 @@ class TransactionHistoryPanel extends JPanel {
                 remove(c);
 
         if (i == -1 || i ==-2) historyLabel.setText("All transactions of BlockChain:");
-        else historyLabel.setText("Transactions of Block " + (i + 1) + ":");
+        else if (i == 0) historyLabel.setText("Transactions of Genesis Block:");
+        else historyLabel.setText("Transactions of Block " + i + ":");
         AllScrollHistory scrollHistoryPanel = new AllScrollHistory(i);
         JScrollPane scrollPane = new JScrollPane(scrollHistoryPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setBounds(100, 100, frameWidth - 200, frameHeight - 220);
@@ -312,6 +314,7 @@ class AllScrollHistory extends JPanel {
 
         if (count == 0) {
             RoundButton button = new RoundButton("NO History for BlockChain !", 40, Color.WHITE, Color.WHITE, 0.2f);
+            if (i == 0) button.setText("Genesis Block does not contain any Transactions !");
             this.add(button);
             button.add(Box.createHorizontalGlue());
             button.setMargin(new Insets(20, 0, 20, 0));

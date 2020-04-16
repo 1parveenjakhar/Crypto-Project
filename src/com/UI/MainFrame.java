@@ -126,13 +126,9 @@ class MainPanel extends BackgroundPanel{
         });
 
         viewBlockchainButton.addActionListener(e -> {
-            if (medicalChain.blockchain.get(0).transactions.size() == 0 && medicalChain.pendingToVerify.size() == 0)
-                showErrorPopUp("NO Transactions has been made yet !");
-            else {
-                mainFrame.remove(framePanel);
-                mainFrame.add(new BlockChain());
-                mainFrame.repaint();
-            }
+            mainFrame.remove(framePanel);
+            mainFrame.add(new BlockChain());
+            mainFrame.repaint();
         });
     }
 
