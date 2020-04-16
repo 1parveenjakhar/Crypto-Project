@@ -299,7 +299,7 @@ class TransactionPanel extends JPanel {
                     Transaction newTransaction = new Transaction(user, patient, stringBuilder.toString(), list);
                     medicalChain.pendingToVerify.add(newTransaction);
 
-                    FileOutputStream fileOut = new FileOutputStream(new File("chainPath"));
+                    FileOutputStream fileOut = new FileOutputStream(new File(chainPath));
                     ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
                     objectOut.writeObject(medicalChain);
                     objectOut.close();
@@ -360,15 +360,15 @@ class MinePanel extends JPanel {
         int pending = medicalChain.pendingToVerify.size();
         JLabel mineLabel = new JLabel();
         if (pending == 0) mineLabel.setText("No transactions are pending now !");
-        else if (pending  == 1) mineLabel.setText("1 transaction is pending to Verify !");
-        else mineLabel.setText((pending) + " transactions are pending to Verify !");
+        else if (pending  == 1) mineLabel.setText("1 Transaction is pending to Verify !");
+        else mineLabel.setText((pending) + " Transactions are pending to Verify !");
         mineLabel.setForeground(Color.WHITE);
         mineLabel.setFont(new Font(getName(), Font.BOLD, 30));
         mineLabel.setBounds(100, 100, frameWidth - 405, 50);
         mineLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(mineLabel);
         int x = (frameWidth - 205 - 300) / 2;
-        RoundButton verifyButton = new RoundButton("Verify A Transaction", x, 200, 300, 50, 25, Color.CYAN, blueColor, false);
+        RoundButton verifyButton = new RoundButton("Verify Transactions", x, 200, 300, 50, 25, Color.CYAN, blueColor, false);
         add(verifyButton);
 
         JLabel statusLabel = new JLabel();
@@ -389,7 +389,7 @@ class MinePanel extends JPanel {
                         for (RoundButton b : buttons)
                             b.setEnabled(false);
                         verifyButton.setEnabled(false);
-                        medicalChain.verifyTransaction(statusLabel);
+                        medicalChain.verifyTransaction(statusLabel, mineLabel);
                         for (RoundButton b : buttons)
                             b.setEnabled(true);
                         verifyButton.setEnabled(true);
@@ -398,13 +398,6 @@ class MinePanel extends JPanel {
                         interruptedException.printStackTrace();
                         mainFrame.enableButtons();
                     }
-                    if (medicalChain.pendingToVerify.size()  == 0)
-                        mineLabel.setText("No transactions are pending now !");
-                    else
-                    if (medicalChain.pendingToVerify.size()  == 1) mineLabel.setText("1 transaction is pending to Verify !");
-                    else mineLabel.setText((medicalChain.pendingToVerify.size()) + " transactions are pending to Verify !");
-
-                    System.out.println("Now, capacity = " + medicalChain.blockchain.get(medicalChain.blockchain.size() - 1).capacity);
                 });
                 t.start();
 

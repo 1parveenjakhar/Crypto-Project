@@ -1,1 +1,0 @@
-1. When to use 'isChainValid()' method? : MedicalChain.java -> 39
