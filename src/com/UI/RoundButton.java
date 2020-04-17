@@ -19,7 +19,7 @@ public class RoundButton extends JButton {
         backColor = bColor;
         borderPaint = border;
         setBounds(x, y, w, h);
-        setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        setFont(new Font(Font.SERIF, Font.BOLD, 20));
         setForeground(fColor);
         setContentAreaFilled(false);
         setFocusPainted(false);

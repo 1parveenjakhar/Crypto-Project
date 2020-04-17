@@ -81,6 +81,7 @@ class MainPanel extends BackgroundPanel{
         IDLabel.setBounds(100, 400, 400, 50);
         add(IDLabel);
         RoundTextField IDField = new RoundTextField(100, 450, 400, 40, 25, Color.WHITE);
+        IDField.setHorizontalAlignment(SwingConstants.CENTER);
         add(IDField);
         RoundButton loginButton = new RoundButton("Login", 250, 500, 100, 40, 25, Color.CYAN, blueColor, false);
         add(loginButton);

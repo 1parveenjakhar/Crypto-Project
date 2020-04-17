@@ -226,7 +226,7 @@ class TransactionPanel extends JPanel {
         toUserLabel.setBounds(100, 50, 300, 40);
         add(toUserLabel);
 
-        RoundTextField userIDField = new RoundTextField(370, 50, 150, 35, 25, Color.WHITE);
+        RoundTextField userIDField = new RoundTextField(420, 50, 150, 35, 25, Color.WHITE);
         userIDField.setAlignmentY(CENTER_ALIGNMENT);
         userIDField.setCaretColor(Color.WHITE);
         userIDField.setHorizontalAlignment(SwingConstants.CENTER);
