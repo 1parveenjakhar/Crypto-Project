@@ -8,7 +8,7 @@ import java.awt.*;
 import java.io.File;
 
 public class CommonConstants {
-    public static int frameWidth = 1000;
+    public static int frameWidth = 1100;
     public static int frameHeight = 600;
     public static final int difficulty = 3;
     public static Color blueColor = Color.decode("#013070");

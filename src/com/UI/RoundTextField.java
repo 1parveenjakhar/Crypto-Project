@@ -11,6 +11,7 @@ public class RoundTextField extends JTextField {
         setBounds(x, y, w, h);
         setMargin(new Insets(0, 10, 0, 10));
         setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
+        setBackground(new Color(0,0,0,0));
         setForeground(fColor);
         setOpaque(false);
         setCaretColor(Color.WHITE);
